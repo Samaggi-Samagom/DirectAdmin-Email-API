@@ -121,8 +121,22 @@ class DirectAdmin:
         response = self.send_request("CMD_API_POP", payload, response_type=DirectAdminResponse.Text)
 
         if response.failure:
-            warnings.warn("Failed to delete user")
-            warnings.warn(response.decode())
+            warnings.warn("Failed to delete user: {user}".format(user=username))
+            warnings.warn(str(response.decode()))
+            return False
+        return True
+    
+    def change_quota(self, username: str, quota: int):
+        payload = {"action": "modify",
+                   "domain": self.domain,
+                   "user": username,
+                   "quota": quota}
+        
+        response = self.send_request("CMD_API_POP", payload, response_type=DirectAdminResponse.URLEncodedArray, failure_response_type=DirectAdminResponse.URLEncodedArray)
+        
+        if response.failure:
+            warnings.warn("Failed to change user's quota for user {user}".format(user=username))
+            warnings.warn(str(response.decode()))
             return False
         return True
 
@@ -160,7 +174,7 @@ class DirectAdmin:
 
         if response.failure:
             warnings.warn("Failed to list forwarders")
-            warnings.warn(response.decode())
+            warnings.warn(str(response.decode()))
             return
 
         response.__class__ = DirectAdminResponse.URLEncodedString
@@ -177,7 +191,7 @@ class DirectAdmin:
 
         if response.failure:
             warnings.warn("Failed to modify forwarder")
-            warnings.warn(response.decode())
+            warnings.warn(str(response.decode()))
             return False
         return True
 
@@ -246,7 +260,7 @@ class DirectAdmin:
 
         if response.failure:
             warnings.warn("Failed to create forwarder")
-            warnings.warn(response.decode())
+            warnings.warn(str(response.decode()))
             return False
         return True
 

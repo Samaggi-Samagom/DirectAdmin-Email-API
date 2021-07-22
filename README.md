@@ -179,6 +179,7 @@ Returns boolean.
 **TRUE** if operation was successful  
 **FALSE** if operation failed. Will print warning with details
 
+<br/>
 
 ### DirectAdminResponseType 
 
