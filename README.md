@@ -64,7 +64,7 @@ Returns boolean.
 
 <br/>
 
-### Editing Account Quota
+### Modifying Account Quota
 `.change_quota(username: str, quota: int) -> bool`
 
 >**username:** username of the user whose quota is to be changed (do NOT include @domain.com)
@@ -73,6 +73,8 @@ Returns boolean.
 Returns boolean.
 **TRUE** if operation was successful  
 **FALSE** if operation failed. Will print warning with details
+
+<br/>
 
 ### Deleting an Email Account 
 `.delete_user(username: str)`
