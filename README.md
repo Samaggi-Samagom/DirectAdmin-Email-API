@@ -1,6 +1,6 @@
 # Python API for Managing MXRoute Email Accounts through DirectAdmin API
 
-##Requirements
+## Requirements
 
 ### Python
 Tested on Python 3.7. Does not support Python 2 due to the usage of `urllib.parse`.
@@ -15,7 +15,7 @@ Requires access to the following commands on DirectAccess
 -`CMD_API_POP` (required for creating/modifying/deleting email account)
  
 
-##Initialisation
+## Initialisation
 **my_code.py** (Your main Python file):
 ```
 from DirectAdmin_API import DirectAdmin
@@ -32,10 +32,10 @@ password = myPassword                       #The password used to sign in
 domain = mydomain.com                       #The domain that you would like to edit
 ```
 
-##Documentation
+## Documentation
 
 
-###Custom API Request
+### Custom API Request
 `.checkRequest(function: str, payload: dict, response_type: DirectAdminResponse.__class__, failure_response_type: DirectAdminResponse.__class__) -> DirectAdminResponse`
 
 
@@ -51,7 +51,7 @@ Call `.raw()` on the return value to get the raw string response
 
 <br/>
 
-###Creating an Email Account
+### Creating an Email Account
 `.create_user(username: str, password: str, quota: int) -> bool`
 
 >**username:** username of the user to be created (do NOT include @domain.com)  
@@ -64,7 +64,7 @@ Returns boolean.
 
 <br/>
 
-###Deleting an Email Account 
+### Deleting an Email Account 
 `.delete_user(username: str)`
 
 >**username:** username of the user to be deleted
@@ -75,7 +75,7 @@ Returns boolean.
 
 <br/>
 
-###List Users
+### List Users
 `.list_users(cache: bool) -> list`
 
 >**cache:** temporarily keeps the list of users in memory for use in `.user_exists()`. Should be kept False otherwise. Cache is cleared if `.list_users()` is called again with `cache=False`
@@ -85,7 +85,7 @@ Contains usernames of all email users (does not include @domain.com)
 
 <br/>
 
-###Check if User Exists
+### Check if User Exists
 
 `.user_exists(username: str) -> bool`
 
@@ -97,7 +97,7 @@ Returns boolean.
 
 <br/>
 
-###List All Forwarding Lists
+### List All Forwarding Lists
 
 `.list_forwarders(raw: bool) -> dict`
 
@@ -109,7 +109,7 @@ If `raw=False`, the dictionary will be in the following format `{string: [string
 
 <br/>
 
-###Creating a Forwarding List
+### Creating a Forwarding List
 
 `.create_forwarder(forwarder_name: str, username: str, usernames: list) -> bool`
 
@@ -125,7 +125,7 @@ Returns boolean.
 
 <br/>
 
-###Set Forwarding List (Raw Value)
+### Set Forwarding List (Raw Value)
 This is used to completely replace an existing forwarding list. The current value for the forwarding list will be replaced.
 
 
@@ -141,7 +141,7 @@ Returns boolean.
 
 <br/>
 
-###Set Forwarding List
+### Set Forwarding List
 This is used to completely replace an existing forwarding list. The current value for the forwarding list will be replaced.
 
 `.set_users_forwarder(usernames: list, forwarder: str) -> bool`
@@ -155,7 +155,7 @@ Returns boolean.
 
 <br/>
 
-###Add User to Forwarding List
+### Add User to Forwarding List
 
 `.add_user_forwarder(username: str, forwarder: str) --> bool`
 
@@ -168,7 +168,7 @@ Returns boolean.
 
 <br/>
 
-###Remove User from Forwarding List
+### Remove User from Forwarding List
 
 `.remove_user_forwarder(username: str, forwarder: str) -> bool`
 
@@ -180,7 +180,7 @@ Returns boolean.
 **FALSE** if operation failed. Will print warning with details
 
 
-###DirectAdminResponseType 
+### DirectAdminResponseType 
 
 When making a custom API request, the correct response type must be passed to the function to ensure that the response can be understood correctly. For most API calls, the expected response type is provided in the API guide.
 
