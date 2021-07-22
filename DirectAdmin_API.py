@@ -15,7 +15,7 @@ class DirectAdminResponse:
         def raw(self):
             return self.content
 
-        def decode(self, *args):
+        def decode(self):
             return self.content
 
         def is_error(self):
@@ -84,7 +84,11 @@ class DirectAdmin:
         if self.domain not in domains:
             raise RuntimeError("The domain provided does not exist or you don't have permission to access it")
 
-    def send_request(self, function: str, payload: dict = None, response_type: DirectAdminResponse.__class__ = DirectAdminResponse.Unknown, failure_response_type: DirectAdminResponse.__class__ = DirectAdminResponse.Unknown):
+    def send_request(self, function: str, payload: dict = None, response_type: DirectAdminResponse.__class__ = None, failure_response_type: DirectAdminResponse.__class__ = None):
+        if response_type is None:
+            response_type = DirectAdminResponse.URLEncodedString
+        if failure_response_type is None:
+            response_type = DirectAdminResponse.URLEncodedString
         response = requests.post(("https://" if "https://" not in self.server else "") + self.server + ("/" if self.server[-1] != "/" else "") + function, auth=HTTPBasicAuth(self.__user, self.__password), data=payload)
 
         if response.status_code != 200:
@@ -177,9 +181,7 @@ class DirectAdmin:
             warnings.warn(str(response.decode()))
             return
 
-        response.__class__ = DirectAdminResponse.URLEncodedString
-
-        return response.decode(raw)
+        return response.decode(raw=raw)
 
     def modify_forwarder_raw(self, forwarder: str, value: str):
         payload = {"action": "modify",
@@ -196,7 +198,7 @@ class DirectAdmin:
         return True
 
     def remove_user_forwarder(self, username: str, forwarder: str):
-        forwarders = self.list_forwarders()
+        forwarders: dict = self.list_forwarders()
 
         if forwarder not in forwarders.keys():
             warnings.warn("Forwarder list does not exist, skipping. Forwarder: " + forwarder)
@@ -263,4 +265,3 @@ class DirectAdmin:
             warnings.warn(str(response.decode()))
             return False
         return True
-
