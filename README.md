@@ -38,7 +38,7 @@ domain = mydomain.com                       #The domain that you would like to e
 
 # Documentation
 
-##DirectAdmin
+## DirectAdmin
 
 
 ### Initialisation

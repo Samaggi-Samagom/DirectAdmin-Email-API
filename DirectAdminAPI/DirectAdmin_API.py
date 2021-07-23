@@ -266,7 +266,7 @@ class DirectAdmin:
         self.modify_forwarder_raw(forwarder, new_forwarder)
 
     def set_users_forwarder(self, usernames: list, forwarder: str):
-        forwarders = self.list_forwarders()
+        forwarders = self.list_forwarders(raw=True)
 
         if forwarder not in forwarders.keys():
             warnings.warn("Forwarder list does not exist, creating. Forwarder: " + forwarder)
@@ -305,6 +305,8 @@ class DirectAdminEmailUser:
     def __init__(self, domain_object: DirectAdmin, username: str, limits: dict = None):
         self.username = username
         self.domain_object = domain_object
+        if limits is None:
+            return
         self.__quota = int(limits["quota"]) if limits["quota"] is not None else -1
         self.__usage = int(limits["usage_bytes"]) if limits["usage_bytes"] is not None else -1
 
@@ -351,13 +353,14 @@ class DirectAdminEmailForwarder:
             self.__is_init = True
 
     def get_members(self):
-        forwarders = self.domain_object.list_forwarders()
+        forwarders = self.domain_object.list_forwarders(raw=True)
         if forwarders is None:
             raise RuntimeError("DirectAdminEmailForwarder.update_members: Unable to get forwarders, cannot continue")
 
         if self.name not in forwarders.keys():
             warnings.warn("DirectAdminEmailForwarder.update_members: forwarder does not currently exist. Value initialised as []")
             self.members = []
+            self.__is_init = True
             return
 
         quo = self.domain_object.get_all_limits()
