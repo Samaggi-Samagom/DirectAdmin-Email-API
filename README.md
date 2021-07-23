@@ -44,7 +44,7 @@ domain = mydomain.com                       #The domain that you would like to e
 >**response_type:** see DirectAdminResponseType section below  
 >**failure_response_type:** see DirectAdminResponseType section below
 
-Returns DirectAdmin Response Object.  
+Returns DirectAdminResponse Object.  
 Query `.failure` on the return value to check if it is the success response or a failure response  
 Call `.decode()` on the return value to get the decoded response  
 Call `.raw()` on the return value to get the raw string response
