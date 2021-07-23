@@ -56,8 +56,8 @@ class DirectAdminResponse:
         def is_error(self):
             response = self.decode()
             if "error" not in list(response.keys()):
-                warnings.warn("Reply does not indicate success nor failure")
-                warnings.warn(str(response))
+                # warnings.warn("Reply does not indicate success nor failure")
+                # warnings.warn(str(response))
                 return False
             else:
                 if response["error"][0] == "0":
@@ -88,7 +88,7 @@ class DirectAdmin:
         if response_type is None:
             response_type = DirectAdminResponse.URLEncodedString
         if failure_response_type is None:
-            response_type = DirectAdminResponse.URLEncodedString
+            failure_response_type = DirectAdminResponse.URLEncodedString
         response = requests.post(("https://" if "https://" not in self.server else "") + self.server + ("/" if self.server[-1] != "/" else "") + function, auth=HTTPBasicAuth(self.__user, self.__password), data=payload)
 
         if response.status_code != 200:
@@ -117,6 +117,30 @@ class DirectAdmin:
             return False
         return True
 
+    def get_all_limits(self):
+        payload = {"action": "list",
+                   "domain": self.domain,
+                   "type": "quota"}
+
+        response = self.send_request("CMD_API_POP", payload, response_type=DirectAdminResponse.URLEncodedString)
+
+        if response.failure:
+            warnings.warn("Failed to list users")
+            print(response.decode())
+            return
+
+        result = {}
+        response_decoded = response.decode()
+        for user in response_decoded.keys():
+            data = {}
+            pairs = response_decoded[user][0].split("&")
+            for pair in pairs:
+                key, value = pair.split("=")
+                data[urllib.parse.unquote(key)] = urllib.parse.unquote(value)
+            result[user] = data
+
+        return result
+
     def delete_user(self, username: str):
         payload = {"action": "delete",
                    "domain": self.domain,
@@ -129,22 +153,22 @@ class DirectAdmin:
             warnings.warn(str(response.decode()))
             return False
         return True
-    
+
     def change_quota(self, username: str, quota: int):
         payload = {"action": "modify",
                    "domain": self.domain,
                    "user": username,
                    "quota": quota}
-        
+
         response = self.send_request("CMD_API_POP", payload, response_type=DirectAdminResponse.URLEncodedArray, failure_response_type=DirectAdminResponse.URLEncodedArray)
-        
+
         if response.failure:
             warnings.warn("Failed to change user's quota for user {user}".format(user=username))
             warnings.warn(str(response.decode()))
             return False
         return True
 
-    def list_users(self, cache: bool = False):
+    def list_users(self, cache: bool = False, raw: bool = False):
         self.__users_cache_valid = False
 
         payload = {"action": "list",
@@ -161,7 +185,11 @@ class DirectAdmin:
             self.__users_cache = response.decode()
             self.__users_cache_valid = True
 
-        return response.decode()
+        if raw:
+            return response.decode()
+        else:
+            quo = self.get_all_limits()
+            return [DirectAdminEmailUser(self, usr, quo[usr]) for usr in response.decode()]
 
     def user_exists(self, username: str):
         existing_users = self.__users_cache
@@ -181,7 +209,12 @@ class DirectAdmin:
             warnings.warn(str(response.decode()))
             return
 
-        return response.decode(raw=raw)
+        if not raw:
+            decoded = response.decode(raw=False)
+            limits = self.get_all_limits()
+            return [DirectAdminEmailForwarder(self, fwd, data=decoded, limits_cache=limits) for fwd in decoded.keys()]
+        else:
+            return response.decode(raw=True)
 
     def modify_forwarder_raw(self, forwarder: str, value: str):
         payload = {"action": "modify",
@@ -265,3 +298,112 @@ class DirectAdmin:
             warnings.warn(str(response.decode()))
             return False
         return True
+
+
+class DirectAdminEmailUser:
+
+    def __init__(self, domain_object: DirectAdmin, username: str, limits: dict = None):
+        self.username = username
+        self.domain_object = domain_object
+        self.__quota = int(limits["quota"]) if limits["quota"] is not None else -1
+        self.__usage = int(limits["usage_bytes"]) if limits["usage_bytes"] is not None else -1
+
+    def quota(self):
+        if self.__quota == -1:
+            self.get_limits()
+        return self.__quota/1024/1024
+
+    def usage(self):
+        if self.__usage == -1:
+            self.get_limits()
+        return self.__usage/1024/1024
+
+    def get_limits(self):
+        quotas = self.domain_object.get_all_limits()
+        if self.username not in quotas.keys():
+            raise RuntimeError("DirectAdminEmailUser.get_quota: user not found.")
+        self.__quota = quotas[self.username]["quota"]
+        self.__usage = quotas[self.username]["usage_bytes"]
+
+    def add_to(self, forwarder: str):
+        return self.domain_object.add_user_forwarder(self.username, forwarder)
+
+    def delete(self):
+        return self.domain_object.delete_user(self.username)
+
+
+class DirectAdminEmailForwarder:
+
+    def __init__(self, domain_object: DirectAdmin, name: str, auto_save=True, auto_update=True, data: dict = None, limits_cache: dict = None):
+        self.name = name
+        self.members = []
+        self.domain_object = domain_object
+        self.__auto_save = auto_save
+        self.__auto_update = auto_update
+        self.__is_init = False
+
+        if data is not None:
+            limits_cache = self.domain_object.get_all_limits() if limits_cache is None else limits_cache
+            for user in data[self.name]:
+                user = user.replace("@" + domain_object.domain, "")
+                if user in limits_cache.keys():
+                    self.members.append(DirectAdminEmailUser(self.domain_object, user, limits_cache[user]))
+            self.__is_init = True
+
+    def get_members(self):
+        forwarders = self.domain_object.list_forwarders()
+        if forwarders is None:
+            raise RuntimeError("DirectAdminEmailForwarder.update_members: Unable to get forwarders, cannot continue")
+
+        if self.name not in forwarders.keys():
+            warnings.warn("DirectAdminEmailForwarder.update_members: forwarder does not currently exist. Value initialised as []")
+            self.members = []
+            return
+
+        quo = self.domain_object.get_all_limits()
+        self.members = [DirectAdminEmailUser(self.domain_object, usr, quo[usr]) for usr in forwarders[self.name]]
+        self.__is_init = True
+
+    def __init_check(self):
+        if not self.__is_init:
+            raise RuntimeError("DirectAdminEmailForwarder.get_members must be called at least once before using it")
+
+    def save(self):
+        self.__init_check()
+        return self.domain_object.set_users_forwarder(usernames=[usr.username for usr in self.members], forwarder=self.name)
+
+    def add_member(self, username: str):
+        self.__init_check()
+        if self.__auto_update:
+            self.get_members()
+
+        self.members.append(DirectAdminEmailUser(self.domain_object, username))
+
+        if self.__auto_save:
+            return self.save()
+
+    def remove_member(self, username: str):
+        self.__init_check()
+        if self.__auto_update:
+            self.get_members()
+
+        if username not in self.members:
+            warnings.warn("DirectAdminEmailForwarder.remove_member: user requested to be removed does not exist in the forwarding list")
+            return
+        self.members.remove(DirectAdminEmailUser(self.domain_object, username))
+
+        if self.__auto_save:
+            return self.save()
+
+    def members_usernames(self):
+        return [member.username for member in self.members]
+
+    def average_quota(self):
+        if len(self.members) == 0:
+            return 0
+        return sum([usr.quota() for usr in self.members])/len(self.members)
+
+    def average_usage(self):
+        if len(self.members) == 0:
+            return 0
+        return sum([usr.usage() for usr in self.members]) / len(self.members)

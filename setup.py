@@ -4,12 +4,12 @@ with open("README.md", 'r') as f:
     long_description = f.read()
 
 setup(
-   name='DirectAdmin_API',
-   version='1.0',
+   name='DirectAdminAPI',
+   version='1.1',
    description='Python API for Managing MXRoute Email Accounts through DirectAdmin API',
    long_description=long_description,
    author='Pakkapol Lailert',
    author_email='booklailert@gmail.com',
-   packages=['DirectAdmin_API'],
+   packages=['DirectAdminAPI'],
    install_requires=['requests'],
 )
