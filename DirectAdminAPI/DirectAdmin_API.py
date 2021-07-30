@@ -154,13 +154,15 @@ class DirectAdmin:
             return False
         return True
 
-    def change_quota(self, username: str, quota: int):
+    def change_quota(self, username: str, quota: int, password: str):
         payload = {"action": "modify",
                    "domain": self.domain,
                    "user": username,
-                   "quota": quota}
+                   "quota": quota,
+                   "passwd": password,
+                   "passwd2": password}
 
-        response = self.send_request("CMD_API_POP", payload, response_type=DirectAdminResponse.URLEncodedArray, failure_response_type=DirectAdminResponse.URLEncodedArray)
+        response = self.send_request("CMD_API_POP", payload, response_type=DirectAdminResponse.URLEncodedArray, failure_response_type=DirectAdminResponse.URLEncodedString)
 
         if response.failure:
             warnings.warn("Failed to change user's quota for user {user}".format(user=username))
@@ -189,7 +191,7 @@ class DirectAdmin:
             return response.decode()
         else:
             quo = self.get_all_limits()
-            return [DirectAdminEmailUser(self, usr, quo[usr]) for usr in response.decode()]
+            return [DirectAdminEmailUser(self, usr, quo[usr]) if usr in quo.keys() else DirectAdminEmailUser(self, usr) for usr in response.decode()]
 
     def user_exists(self, username: str):
         existing_users = self.__users_cache
@@ -214,7 +216,7 @@ class DirectAdmin:
             limits = self.get_all_limits()
             return [DirectAdminEmailForwarder(self, fwd, data=decoded, limits_cache=limits) for fwd in decoded.keys()]
         else:
-            return response.decode(raw=True)
+            return response.decode(raw=False)
 
     def modify_forwarder_raw(self, forwarder: str, value: str):
         payload = {"action": "modify",
@@ -364,7 +366,9 @@ class DirectAdminEmailForwarder:
             return
 
         quo = self.domain_object.get_all_limits()
-        self.members = [DirectAdminEmailUser(self.domain_object, usr, quo[usr]) for usr in forwarders[self.name]]
+        for user in forwarders[self.name]:
+            username = user.replace("@" + self.domain_object.domain, "")
+            self.members.append(DirectAdminEmailUser(self.domain_object, username, quo[username] if username in quo.keys() else None))
         self.__is_init = True
 
     def __init_check(self):
