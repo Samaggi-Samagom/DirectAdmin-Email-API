@@ -123,11 +123,11 @@ Returns dictionary.
 The dictionary will be in the following format 
 ```json
 {
-  <username>: {
-    "limit": <limit>, 
-    "quota": <quota>, 
-    "usage": <usage>, 
-    "usage_bytes": <usage in bytes>
+  "<username>": {
+    "limit": "<limit>", 
+    "quota": "<quota>", 
+    "usage": "<usage>", 
+    "usage_bytes": "<usage in bytes>"
   }
 }
 ```
