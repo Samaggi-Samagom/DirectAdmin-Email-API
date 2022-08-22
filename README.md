@@ -120,7 +120,17 @@ If `raw=False`, returns an array of `DirectAdminEmailUser` with embedded quota/l
 `.get_all_limits() -> dict`
 
 Returns dictionary.  
-The dictionary will be in the following format {<username>: {"limit": <limit>, "quota": <quota>, "usage": <usage>, "usage_bytes": <usage in bytes>}}
+The dictionary will be in the following format 
+```json
+{
+  <username>: {
+    "limit": <limit>, 
+    "quota": <quota>, 
+    "usage": <usage>, 
+    "usage_bytes": <usage in bytes>
+  }
+}
+```
 
 <br/>
 
