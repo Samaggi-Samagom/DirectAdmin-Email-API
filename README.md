@@ -1,4 +1,4 @@
-# Python API for Managing MXRoute Email Accounts through DirectAdmin API
+# Python Interface for Managing MXRoute Email Accounts through DirectAdmin API
 
 ## Requirements
 
@@ -17,23 +17,25 @@ Requires access to the following commands on DirectAccess
 ## Installation
 
 Run the following command to install as a library.  
-`git+git://github.com/Samaggi-Samagom/DirectAdmin-Email-API@master#DirectAdmin_API=DirectAdmin-Email-API`
+```bash
+git+git://github.com/Samaggi-Samagom/DirectAdmin-Email-API@master#DirectAdmin_API=DirectAdmin-Email-API
+````
 
 ## Usage
 **my_code.py** (Your main Python file):
-```
-from DirectAdminAPI.DirectAdmin_API import *
+```python
+from DirectAdminInterface.DirectAdmin_Interface import *
 from credentials import server, username, password, domain
 
 manager = DirectAdmin(server=server, username=username, password=password, domain=domain)
 ``` 
 
 **credentials.py** (In the same folder as your Python file)
-```
-server = something.mxrouting.net:2222       #The same url you use to log in to console
-username = admin                            #The username used to sign in
-password = myPassword                       #The password used to sign in
-domain = mydomain.com                       #The domain that you would like to edit
+```python
+server = "something.mxrouting.net:2222"       #The same url you use to log in to console
+username = "admin"                            #The username used to sign in
+password = "myPassword"                       #The password used to sign in
+domain = "mydomain.com"                       #The domain that you would like to edit
 ```
 
 # Documentation
@@ -196,7 +198,7 @@ Returns boolean.
 
 `.add_user_forwarder(username: str, forwarder: str) --> bool`
 
->**username:** username of the username to be removed from the forwarder list (do not include @domain.com)
+>**username:** username of the username to be added to the forwarder list (do not include @domain.com)
 >**forwarder:** the forwarder name
 
 Returns boolean.  
