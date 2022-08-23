@@ -18,7 +18,7 @@ Requires access to the following commands on DirectAccess
 
 Run the following command to install as a library.  
 ```bash
-git+git://github.com/Samaggi-Samagom/DirectAdmin-Email-API@master#DirectAdmin_API=DirectAdmin-Email-API
+ pip install git+https://github.com/Samaggi-Samagom/DirectAdmin-Email-API@master#DirectAdmin_Interface=DirectAdmin-Email-API
 ````
 
 ## Usage
