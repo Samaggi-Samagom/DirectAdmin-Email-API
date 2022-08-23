@@ -196,7 +196,7 @@ class DirectAdmin:
     def user_exists(self, username: str):
         existing_users = self.__users_cache
         if not self.__users_cache_valid:
-            existing_users = self.list_users(cache=False)
+            existing_users = self.list_users(cache=False, raw=True)
 
         return username in existing_users
 
