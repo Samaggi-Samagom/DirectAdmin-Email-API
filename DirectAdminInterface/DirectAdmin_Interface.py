@@ -308,6 +308,8 @@ class DirectAdminEmailUser:
         self.username = username
         self.domain_object = domain_object
         if limits is None:
+            self.__quota = -1
+            self.__usage = -1
             return
         self.__quota = int(limits["quota"]) if limits["quota"] is not None else -1
         self.__usage = int(limits["usage_bytes"]) if limits["usage_bytes"] is not None else -1
