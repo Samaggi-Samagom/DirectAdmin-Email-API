@@ -317,7 +317,7 @@ class DirectAdminEmailUser:
     def quota(self):
         if self.__quota == -1:
             self.get_limits()
-        return self.__quota/1024/1024
+        return self.__quota/1024/1024 if isinstance(self.__quota, float) or isinstance(self.__quota, int) else 0
 
     def usage(self):
         if self.__usage == -1:
