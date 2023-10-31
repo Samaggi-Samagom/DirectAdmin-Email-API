@@ -322,7 +322,7 @@ class DirectAdminEmailUser:
     def usage(self):
         if self.__usage == -1:
             self.get_limits()
-        return self.__usage/1024/1024
+        return int(self.__usage)/1024/1024
 
     def get_limits(self):
         quotas = self.domain_object.get_all_limits()
