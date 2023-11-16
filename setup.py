@@ -5,7 +5,7 @@ with open("README.md", 'r') as f:
 
 setup(
    name='DirectAdminInterface',
-   version='1.1.6a',
+   version='1.1.7',
    description='Python API for Managing MXRoute Email Accounts through DirectAdmin API',
    long_description=long_description,
    author='Pakkapol Lailert',
