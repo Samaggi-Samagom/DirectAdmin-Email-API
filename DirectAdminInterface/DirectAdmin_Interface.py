@@ -266,9 +266,9 @@ class DirectAdmin:
         self.modify_forwarder_raw(forwarder, new_forwarder)
 
     def add_user_forwarder(self, username: str, forwarder: str):
-        forwarders = self.list_forwarders()
+        forwarders = self.list_forwarders(raw=True)
 
-        if forwarder not in forwarders.keys():
+        if forwarder not in forwarders:
             warnings.warn("Forwarder list does not exist, skipping. Forwarder: " + forwarder)
             return False
 
@@ -279,7 +279,7 @@ class DirectAdmin:
             return False
 
         current_forwarder.append(username)
-        new_forwarder = ",".join([u + "@" + self.domain for u in current_forwarder])
+        new_forwarder = ",".join([u + (("@" + self.domain) if "@" not in u else "") for u in current_forwarder])
 
         self.modify_forwarder_raw(forwarder, new_forwarder)
 
